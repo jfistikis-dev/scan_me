@@ -16,6 +16,9 @@ class SuppliesController extends BaseController
         //
         helper(['form', 'url']);
         $data['invoiceType'] = 0;
+        
+        $data['suppliers'] = ( new SupplierModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
+
 
         return view('suppliesMainScreen', $data );
 
@@ -38,7 +41,9 @@ class SuppliesController extends BaseController
 
         // Save the product in case user wants to retrieve it..
         $this->session->set( "last_product_id", $product_id );
-		print_R ( $product_id );
+		//d ( $product_id );
+        //dd ( $this->request->getPost() );
+        $product_array = $this->request->getPost() ;
 
         /*
          * We have 3 options here
@@ -67,7 +72,7 @@ class SuppliesController extends BaseController
             // inserting a new invoice
             case 2:
                 // create invoice
-              /*  $invoiceModel = new InvoiceModel();
+                $invoiceModel = new InvoiceModel();
                 $invoiceModel->insert( [
                     "supplier_id"           => $product_array['supplier_id'],
                     "wholesale_discount"    => $product_array['wholesale_discount'],
@@ -102,7 +107,7 @@ class SuppliesController extends BaseController
 
                 $data['invoiceRows'] = $invoiceRowModel
                     ->join("products", "products.id = invoice_rows.product_id")
-                    ->find( $invoiceRowId );*/
+                    ->find( $invoiceRowId );
                 break;
 
 

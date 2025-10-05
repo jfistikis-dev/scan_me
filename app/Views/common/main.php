@@ -39,11 +39,14 @@
     <!-- autocomplete JS script -->
     <script type="text/javascript" src="<?php echo base_url("js/autocomplete.js") ?>" ></script>
 
-    <!-- Jquery UI for sortable items -->
- <!--   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css"> -->
- <!--   <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script> -->
-<!-- -->
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    
+    <!-- Jquery UI for sortable items -->
+    <link rel="stylesheet" href="<?php echo base_url("css/jquery-ui.css" ) ?>">
+    <link rel="stylesheet" href="<?php echo base_url("css/jquery-ui.theme.css" ) ?>">
+      <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+    
 
     <!-- Dymo printing software -->
     <!-- <script type="text/javascript" src="<?php echo base_url("public/js/dymo.connect.framework.js") ?>" ></script> -->

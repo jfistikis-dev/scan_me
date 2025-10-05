@@ -54,7 +54,7 @@ $routes->get('/product/autocomplete_search', 'ProductController::ajaxAutocomplet
 
 // ---- barcodes ---
 $routes->get( '/barcode/create', 'ProductController::ajaxBarcodeCreate'); // create a barcode based on supplier & brand
-$routes->get( '/barcode/search/(:num)', 'ProductController::ajaxBarcodeSearch/$1'); // create a barcode based on supplier & brand
+$routes->get( '/barcode/search/(:any)', 'ProductController::ajaxBarcodeSearch/$1'); // create a barcode based on supplier & brand
 
 
 // ---- brands ---
@@ -66,7 +66,7 @@ $routes->post( '/brands/sort', 'BrandController::sort');
 
 // ---- Categories ---
 $routes->get(  '/categories', 'CategoryController::index');
-$routes->post( '/categories/search', 'CategoryController::search');
+$routes->get( '/categories/search', 'CategoryController::search');
 $routes->post( '/categories', 'CategoryController::store');
 $routes->post( '/categories/delete', 'CategoryController::destroy');
 $routes->post( '/categories/sort', 'CategoryController::sort');

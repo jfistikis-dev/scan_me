@@ -18,9 +18,9 @@
             </button>
             - Καταχώρηση
         </div>
-        <div id="dymoLabel"><button type="button" href="#" class="btn btn-primary mt-3 btn-lg gap-2"></button> </div>
+        <!--<div id="dymoLabel"><button type="button" href="#" class="btn btn-primary mt-3 btn-lg gap-2"></button> </div>-->
         <div class="card border-0">
-            <button onclick="location=window.location='<?= base_url(); ?>'" class="btn btn-primary mt-3 btn-lg gap-2 btn-exit" onclick="window.location='http://localhost/ArCoRetail'" type="button">
+            <button onclick="location=window.location='<?= base_url(); ?>'" class="btn btn-primary mt-3 btn-lg gap-2 btn-exit" type="button">
                 <i class="bi bi-arrow-bar-left"></i> Έξοδος
             </button>
         </div>
@@ -105,7 +105,7 @@
                     <label for="supplier">Προμηθευτής</label>
                 </div>
                 <div class="col-2 pt-2">
-                    <button type="button" class="btn btn-secondary supplier-btn-modal" data-bs-toggle="modal" data-bs-target="#supplierModal"><i class="bi bi-card-heading"></i></button>
+                    <button type="button" class="btn btn-secondary supplier-btn-modal" ><i class="bi bi-card-heading"></i></button>
                 </div>
                 <div class="col-4 form-floating">
                     <input type="input" class="form-control" id="brandInput" name = "brand" placeholder="Μάρκα" readonly>
@@ -184,7 +184,7 @@
                     <label for="categoryItemInput">Τεχνική - Κατηγορία</label>
                 </div>
                 <div class="col-2 pt-2">
-                    <button type="button" class="btn btn-secondary category-btn-modal" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="bi bi-card-heading"></i></button>
+                    <button type="button" class="btn btn-secondary category-btn-modal" ><i class="bi bi-card-heading"></i></button>
                 </div>
                 <div class="col-6 ">
                     <div class="form-check">
@@ -265,7 +265,7 @@
 </div>
 
 <!-- Supplier modal -->
-<div class="modal fade" id="supplierModal" aria-labelledby="exampleModalLabel" aria-hidden="true" tabindex="-1">
+<div class="modal fade" id="supplierModal" aria-hidden="true" aria-labelledby="exampleModalLabel"  tabindex="-1" >
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -356,7 +356,7 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Έξοδος</button>
+                <button type="button" class="btn btn-secondary btn-close-category-modal" >Έξοδος</button>
             </div>
         </div>
     </div>
@@ -498,7 +498,7 @@
 
         // change invoice_id  in the hidden value of the form to be posted
         $("input[name='categoryrow_id']").val(  categoryrow_id.id );
-
+        
     }
 
     function getTodayDate( ) {
@@ -622,7 +622,7 @@
 
                     }
                 });
-
+                    
             },
             error:function(){
                 alert("error");
@@ -640,6 +640,8 @@
 
         input.val("");
         supplierPopulateList ( input.val() );
+
+        $("#supplierModal").modal("show");
 
     });
 
@@ -877,8 +879,8 @@
         // Using ajax,  get a list of values for this item and display in the modal
         $.ajax({
 
-            type: "post",
-            url: "categories/search",
+            type: "get",
+            url: "/categories/search",
             data: { "categoryItemName" : categoryItemName },
             success:function( serverData ) {
 
@@ -945,6 +947,8 @@
         input.val("");
         categoryPopulateList( input.val() );
 
+        $("#categoryModal").modal("show");
+
     });
 
     // An item from the list is pressed !
@@ -957,7 +961,10 @@
 
     });
 
-
+    btn-close-category-modal
+    $("#categoryModal .btn-close-category-modal").on ( "click", function () {
+        $("#categoryModal").modal("hide");
+    })
 
 </script>
 

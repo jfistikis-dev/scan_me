@@ -77,9 +77,10 @@ class CategoryController extends BaseController
         $categoryItemName   = $this->request->getVar("categoryName");
 
         $categoryModel      = new \App\Models\CategoryModel();
-        $categoryRowModel  = new \App\Models\CategoryRowModel();
+        $categoryRowModel   = new \App\Models\CategoryRowModel();
         $categories         = $categoryModel->findAll();
 
+        $result = [];
         if ( strlen(  $categoryItemName ) <= 0 ) {
 
             foreach ( $categories as $category ) {
