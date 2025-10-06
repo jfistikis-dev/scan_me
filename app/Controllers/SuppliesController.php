@@ -11,14 +11,22 @@ use App\Models\SupplierModel;
 
 class SuppliesController extends BaseController
 {
+/**
+ * Index page of the supplies view.
+ * 
+ * This function is responsible for displaying the main page of the supplies view.
+ * It will display a list of all the suppliers and allow the user to select one of them.
+ * 
+ * @return \CodeIgniter\View\View The rendered view of the index page of the supplies view.
+ */
     public function index()
     {
         //
         helper(['form', 'url']);
         $data['invoiceType'] = 0;
         
-        $data['suppliers'] = ( new SupplierModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
-
+        $data['suppliers']  = ( new SupplierModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
+        $data['js_file']    = 'suppliesMainScreen.js';
 
         return view('suppliesMainScreen', $data );
 

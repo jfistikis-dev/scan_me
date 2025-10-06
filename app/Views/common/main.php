@@ -51,6 +51,7 @@
     <!-- Dymo printing software -->
     <!-- <script type="text/javascript" src="<?php echo base_url("public/js/dymo.connect.framework.js") ?>" ></script> -->
 
+    
 </head>
  
  
@@ -77,8 +78,12 @@
 <!-- SCRIPTS -->
 
     <!-- React Script -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <!--<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script> -->
+    
+    <?php if (isset($js_file)): ?>
+        <script src="<?= base_url('js/pages/' . $js_file) ?>"></script>
+    <?php endif; ?>
 
 
 <!-- -->
