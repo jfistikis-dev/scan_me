@@ -17,9 +17,9 @@ class ProductModel extends Model
     protected $protectFields        = true;
     protected $allowedFields        = [
 
-        "supplier_id","brand_id","categoryrow_id","description","barcode","stock",
-        "wholesale_price","retail_price","wholesale_discount","discount_on_sales",
-        "image","minimum_quantity", "reorder_quantity"
+        "supplier_id","brand_id","measuring_unit_id","name","description","barcode","stock",
+        "buying_price","selling_price","wholesale_discount","image", "reorder_quantity",
+        "quantity"
 
         ];
 
@@ -136,5 +136,22 @@ class ProductModel extends Model
 
         return $product_id;
         
+    }
+
+
+    public function getProductByBarcode(string $barcode) : array | null {
+        
+        if ( $barcode == "" ) return null;
+        
+        $product = $this
+            ->select( "products.*, products.id as product_id, suppliers.id as supplier_id, suppliers.name as supplier, brands.name as brand, brands.id as brand_id, measuring_units.name as measuring_name")
+            ->where("barcode", $barcode)
+            ->join ( "suppliers", "products.supplier_id = suppliers.id" )
+            ->join ( "brands", "products.brand_id = brands.id" )
+            ->join ( "measuring_units", "products.measuring_unit_id = measuring_units.id" )
+            ->first();
+
+        return $product;
+
     }
 }

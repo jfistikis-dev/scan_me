@@ -189,3 +189,7 @@
 }
 
 ul a.dropdown-item:active { color: #1e2125; background-color : #fff; }
+
+.list-group.basket>.basket-item { cursor: pointer; }
+.list-group.basket>.basket-item:hover { background-color : #448dfa; color:white; }
+.fs-7 { font-size: 0.75rem; }

@@ -72,7 +72,10 @@ export function initBarcodeScanner(targetInputSelector = '#barcode') {
             // Remove '@' and Enter from the string
             const cleanBarcode = barcode.slice(1, -5);
             $barcodeInput.val(cleanBarcode);
+            $barcodeInput.trigger("change" )
+
             console.log("✅ Barcode scanned:", cleanBarcode);
+            
         } else {
          //   console.log("⛔ Ignored input:", barcode);
         }

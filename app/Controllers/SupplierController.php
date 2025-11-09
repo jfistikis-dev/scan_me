@@ -3,6 +3,10 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use Config\App;
+use App\Models\SupplierModel;
+use App\Models\BrandModel;
+use App\Models\ProductModel;
 
 class SupplierController extends BaseController
 {
@@ -12,19 +16,20 @@ class SupplierController extends BaseController
         return $this->getSupplierList ();
     }
 
-    public function store () {
+    public function create () {
 
         if (!$this->validate([
-            'supplierName' => 'required',
+            'name' => 'required',
         ])) {
             return  $this->validator->getErrors() ;
         } else {
 
-            $supplierModel = new \App\Models\SupplierModel();
-            $recFound = $supplierModel->where ("name", $this->request->getVar('supplierName') )->findAll();
+            $name           = $this->request->getVar('name');
+            $supplierModel  = new SupplierModel();
+            $recFound       = $supplierModel->where ("name", $name )->findAll();
 
             if ( $recFound == null ) { // this supplier name not found so ... insert
-                $supplierModel->insert( ["name" => $this->request->getVar('supplierName') ]);
+                $supplierModel->insert( ["name" => $name ]);
             }
 
             return $this->getSupplierList ();
@@ -33,58 +38,70 @@ class SupplierController extends BaseController
 
     }
 
-    public function destroy () {
-
-        if (!$this->validate([
-            'supplierName' => 'required',
-        ])) {
-            return  $this->validator->getErrors() ;
-        } else {
-
-            $supplierModel = new \App\Models\SupplierModel();
-            $supplierModel->where('name', $this->request->getVar('supplierName') )->delete();
-
+    public function destroy ( $supplier_id ) {
+        
+        if (empty($supplier_id)) {
             return $this->getSupplierList ();
         }
+
+        // get the brand
+        $brandModel = new BrandModel();
+        $brands     = $brandModel->where('supplier_id', $supplier_id )->findAll();
+
+        // delete all products
+        $productModel = new ProductModel();
+        foreach ($brands as $brand) {
+            $brand_id = $brand['id'];
+            $productModel->where(['supplier_id' => $supplier_id, 'brand_id' => $brand_id ] )->delete();
+        }
+
+        // delete all brands
+        $brandModel->where('supplier_id', $supplier_id )->delete();
+
+        // delete the supplier
+        (new SupplierModel())->delete($supplier_id);
+    
+        
+        return $this->getSupplierList ();
+        
     }
 
     public function sort () {
 
-        // a typical string would be .. :
-        //item[]=8&item[]=1&item[]=10&item[]=7&item[]=9&item[]=11&item[]=12
-
-        $sort           = explode("&", str_replace( "item[]=", "",  $this->request->getPost( "sortString"))) ;
-        $supplierModel  = new \App\Models\SupplierModel();
-
-        for ( $i=0; $i < count ($sort); $i++ ) {
-            $supplier = $supplierModel->find( $sort[ $i ] );
-
-            $supplierModel->save ( [
-                "id"    => $supplier['id'],
-                'sort'  => $i,
-
-            ] );
+        $session 		= session();
+        
+        if (!$this->validate( [
+			'sort'   => 'required',
+            'sort.*' => 'is_natural_no_zero', // each element must be a positive integer (ID)
+		] )) {
+			$session->setFlashdata('error', lang('School.error_new_school_save')); 
+            return redirect()->back()->withInput();
         }
 
+        $sort           = $this->request->getPost( "sort");
+        $supplierModel  = new SupplierModel();
 
-        // return nothing ... sorting was performed!
+        foreach ($sort as $position => $id) { $supplierModel->update($id, ['sort' => $position]); }
+
+        $session->setFlashdata('error', lang('School.error_new_school_save')); 
+        return redirect()->back()->withInput();
 
     }
 
     public function search () {
 
-        $supplierName = $this->request->getVar("supplierName");
+        $name = $this->request->getGet('name'); 
+        $query = (new SupplierModel())->select(["id", "name"])->orderBy("sort", "ASC");
 
-        $supplierModel = new \App\Models\SupplierModel();
-        if ( strlen( $supplierName ) <= 0 )
-             print_r( json_encode( $supplierModel->select(["id", "name"])->orderBy("sort", "ASC")->findAll() ) );
-        else print_r( json_encode( $supplierModel->select(["id", "name"])->like('name', $supplierName )->orderBy("sort", "ASC")->findAll() ) );
+        return strlen( $name ) <= 0 ? 
+            json_encode( $query->findAll() ) : 
+            json_encode( $query->like('name', $name )->findAll() ) ;
+        
+
     }
 
     private function getSupplierList () {
-
-        $supplierModel = new \App\Models\SupplierModel();
-        print_r( json_encode( $supplierModel->select(["id", "name"])->orderBy("sort", "ASC")->findAll() ) );
+        return  json_encode( (new SupplierModel())->select(["id", "name"])->orderBy("sort", "ASC")->findAll() ) ;
     }
 
 

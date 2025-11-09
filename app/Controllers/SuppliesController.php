@@ -6,7 +6,9 @@ use App\Controllers\BaseController;
 use App\Models\BrandModel;
 use App\Models\InvoiceModel;
 use App\Models\InvoiceRowModel;
+use App\Models\MeasuringUnitModel;
 use App\Models\ProductModel;
+use App\Models\ProductLogModel;
 use App\Models\SupplierModel;
 
 class SuppliesController extends BaseController
@@ -19,142 +21,94 @@ class SuppliesController extends BaseController
  * 
  * @return \CodeIgniter\View\View The rendered view of the index page of the supplies view.
  */
-    public function index()
+    public function index() : string
     {
         //
         helper(['form', 'url']);
-        $data['invoiceType'] = 0;
-        
+                
         $data['suppliers']  = ( new SupplierModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
-        $data['js_file']    = 'suppliesMainScreen.js';
-
-        return view('suppliesMainScreen', $data );
+        $data['brands']     = ( new BrandModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
+        $data['m_units']    = ( new MeasuringUnitModel() )->select(["id", "name"])->orderBy("name", "ASC")->findAll();
+        
+        return view('suppliesMainScreen', $data);
 
     }
-
-    // edit - store
-    // update
 
     public function store()
     {
-
-        // First of all save the product
-        $productModel   = new ProductModel();
-        $product_id     = $productModel->saveProduct( $this->request->getPost() );
-
-
-        // If smth went wrong the the product_id is an array with errors!!
-        if ( is_array( $product_id )) { return view('suppliesMainScreen', $product_id); }
+        
+        $validation         = service('validation');
+        $convertData        = ['measuring_unit_id', 'stock', 'reorder_quantity', 'buying_price', 'selling_price', 'quantity', 'wholesale_discount'];
+        $remember_me_array  = ["supplier_id", "brand_id", "measuring_unit_id", "name","reorder_quantity","selling_price","buying_price","wholesale_discount"];
 
 
-        // Save the product in case user wants to retrieve it..
-        $this->session->set( "last_product_id", $product_id );
-		//d ( $product_id );
-        //dd ( $this->request->getPost() );
-        $product_array = $this->request->getPost() ;
+        $rules = [
+            'barcode'           => 'required',
+            'supplier_id'       => 'required|numeric',
+            'brand_id'          => 'required|numeric',
+            'measuring_unit_id' => 'required|numeric',
+                        
+            'name'              => 'required',
 
-        /*
-         * We have 3 options here
-         *
-         * 1. We are talking about altering - inserting products -- [invoiceType = 0]
-         *      a. Products is new - no product_id posted
-         *      b. product is old - product_id posted
-         *
-         * 2. We are talking about inserting a new invoice -- [invoiceType = 1]
-         *      a. Products is new - no product_id posted
-         *      b. product is old - product_id posted
-         *
-         * 3. We are talking about updating a new invoice -- [invoiceType = 0, invoice_id = **]
-         *      a. Products is new - no product_id posted
-         *      b. product is old - product_id posted
-         */
+            'stock'             => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
+            'reorder_quantity'  => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
+            'buying_price'      => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
+            'selling_price'     => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
+            'quantity'          => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
+            'wholesale_discount'=> 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]'
 
-
-        $invoiceType        = $this->request->getPost( "invoiceType");
-
-        switch ($invoiceType ) {
-
-            // no invoice .. just altering - inserting products -- already taken care of!!
-            case 1: break;
-
-            // inserting a new invoice
-            case 2:
-                // create invoice
-                $invoiceModel = new InvoiceModel();
-                $invoiceModel->insert( [
-                    "supplier_id"           => $product_array['supplier_id'],
-                    "wholesale_discount"    => $product_array['wholesale_discount'],
-                    "wholesale_price"       => $product_array["wholesale_price"]
-                ]);
-                $invoice_id = $invoiceModel->getInsertID();
-
-                // create invoice row
-                $invoiceRowModel    = new InvoiceRowModel();
-                $sum                = floatval ($product_array["quantity"] )  * floatval ($product_array["wholesale_price"] );
-                $sum                -= ($sum * floatval($product_array["wholesale_discount"]) /100) ;
-
-
-                $invoiceRowModel->insert ([
-
-                    "invoice_id"        => $invoice_id,
-                    "product_id"        => $product_id,
-                    "quantity"          => $product_array["quantity"],
-                    "retail_price"      => $product_array["retail_price"],
-                    "wholesale_price"   => $product_array["wholesale_price"],
-                    "discount"          => $product_array["wholesale_discount"],
-                    "sum"               => $sum
-                ]);
-                $invoiceRowId = $invoiceRowModel->getInsertID();
-
-
-                // get invoice data
-                $data ['invoice'] = $invoiceModel->select( "*, suppliers.*, suppliers.id as supplier_id")
-                    ->join( "suppliers", "suppliers.id = invoices.supplier_id")
-                    ->find($invoice_id);
-
-
-                $data['invoiceRows'] = $invoiceRowModel
-                    ->join("products", "products.id = invoice_rows.product_id")
-                    ->find( $invoiceRowId );
-                break;
-
-
-            // updating an old open invoice
-            case 3:
-
-                // update the invoice adding this product as well !!
-
-                break;
+        ];
+        
+        $data = $this->request->getPost();
+        foreach ( $convertData as $value ) {
+            $data[ $value ]    = str_replace(',', '.', $this->request->getPost($value));
+            $data[ $value ]    = $this->request->getPost($value)  == "" ? "0" : $this->request->getPost($value ); 
 
         }
+       
+        if (! $this->validateData($data, $rules)) {
+            session()->setFlashdata('errors', $validation->getErrors());
+            return redirect()->back()->withInput();
+        }
 
-        helper(['form', 'url']);
+        
+        // get existing product
+        $productModel       = new ProductModel();
+        $productLogModel    = new ProductLogModel();
+        $product            = $productModel->where('barcode', $data['barcode'])->first();
 
-        $data[ "invoiceType"] = $invoiceType;
-        return view('suppliesMainScreen', $data );
+        // update stock
+        $data['stock'] = floatval($data['stock'] ) + floatval($data['quantity'] );
+        $quantity = floatval($data['quantity'] );
+        unset ( $data['quantity']);
+        
+        // save/update data 
+        $product != null ? $productModel->set($data)->where('id', $product['id'])->update() : $productModel->insert($data); 
 
+        //create a log
+        if ( $product != null ) {
+            $data['type_id']    = PRODUCT_LOG_TYPE_BUYING;
+            $data['product_id'] = $product['id'] ; 
+            $data['quantity']   = $quantity;
+            $data['old_stock']  = $product['stock'];
+            $data['new_stock']  = $data['stock'];
 
+            $productLogModel->insert($data);
+        }
+        
+       
+        // deal with remember me fields
+        foreach ( $remember_me_array as $item ) {
+            
+            isset ( $data[ $item . '-remember-me-checkbox' ] ) ? 
+                    session()->setFlashdata ( $item . '-remember-me', $data[ $item ] ) : 
+                    session()->remove( $item . '-remember-me' );
+        
+        }
 
-    }
+        session()->setFlashdata('success', 'To προϊόν αποθηκεύτηκε επιτυχώς.' );
+        $this->response->redirect( base_url('/supplies') );
 
-    public function ajaxGetLastProduct () {
-
-        $lastProductId = $this->session->get( "last_product_id" );
-		
-        if ($lastProductId != null ) {
-
-            $productModel = new ProductModel();
-            $product        = $productModel
-                ->select( "products.*, products.id as product_id, suppliers.id as supplier_id, suppliers.name as supplier, brands.name as brand, brands.id as brand_id, category_rows.name as categoryItem")
-                ->join ( "suppliers", "products.supplier_id = suppliers.id" )
-                ->join ( "brands", "products.brand_id = brands.id" )
-                ->join ( "category_rows", "products.categoryrow_id = category_rows.id" )
-				->where ( 'products.id', $lastProductId)
-                ->first();
-
-            return print_R ( json_encode( $product ) );
-
-        } else return null;
 
     }
 
@@ -222,34 +176,7 @@ class SuppliesController extends BaseController
 
     }
 
-    public function ajaxAddToList($entity)
-    {
-
-        switch ($entity) {
-
-            case "supplier" :
-                {
-
-                    $supplierModel = new \App\Models\SupplierModel();
-                    $newItemName = $this->request->getVar('newItemName');
-
-
-                    //print_R ( json_encode( $supplierModel->select("name")->like( "name", $this->request->getVar("keyphrase") )->findAll() ))   ;
-
-                }
-                break;
-
-            case "brand" :
-                {
-                }
-                break;
-            case "technique" :
-                {
-                }
-                break;
-
-        }
-    }
+   
 
 
 

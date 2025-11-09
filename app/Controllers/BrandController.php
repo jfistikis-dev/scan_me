@@ -3,30 +3,37 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\BrandModel;
 
 class BrandController extends BaseController
 {
-    public function index( $supplier_id )
+    public function index()
     {
         //
+        $supplier_id = $this->request->getVar('supplier_id_select');
         return $this->getBrandList ( $supplier_id );
     }
 
-    public function store ( $supplier_id  ) {
+    public function create () {
 
         if (!$this->validate([
-
-            'brandName'     => 'required|alpha_numeric_space',
+            'name'          => 'required',
+            'parent_id'   => 'required|numeric',
         ])) {
             print_r ( $this->validator->getErrors() );
         } else {
 
+            $supplier_id    = $this->request->getVar('parent_id');   
+            $brand_name           = $this->request->getVar('name');   
 
-            $brandModel = new \App\Models\BrandModel();
-            $recFound = $brandModel->where ("name", $this->request->getVar('brandName') )->where("supplier_id", $this->request->getVar('supplier_id'))->findAll();
+            $brandModel = new BrandModel();
+            $recFound = $brandModel
+                    ->where ("name", $brand_name )
+                    ->where("supplier_id", $supplier_id  )
+                    ->findAll();
 
             if ( empty ( $recFound )  ) { // this brand name not found so ... insert
-                $brandModel->insert( ["name" => $this->request->getVar('brandName'), "supplier_id" =>  $supplier_id ]);
+                $brandModel->insert( ["name" => $brand_name, "supplier_id" =>  $supplier_id ]);
             }
 
             return $this->getBrandList ( $supplier_id );
@@ -35,19 +42,14 @@ class BrandController extends BaseController
 
     }
 
-    public function destroy ( $supplier_id ) {
+    public function destroy ( $brand_id ) {
 
-        if (!$this->validate([
-            'brandName' => 'required',
-        ])) {
-            return  $this->validator->getErrors() ;
-        } else {
+        $brand = (new BrandModel())->find( $brand_id );
+        
+        (new BrandModel())->where('id', $brand_id )->delete();
 
-            $brandModel = new \App\Models\BrandModel();
-            $brandModel->where('name', $this->request->getVar('brandName') )->delete();
-
-            return $this->getBrandList ( $supplier_id );
-        }
+        return $this->getBrandList ( $brand['supplier_id'] ) ;
+    
     }
 
     public function sort () {
@@ -55,19 +57,21 @@ class BrandController extends BaseController
         // a typical string would be .. :
         //item[]=8&item[]=1&item[]=10&item[]=7&item[]=9&item[]=11&item[]=12
 
-        $sort           = explode("&", str_replace( "brand[]=", "",  $this->request->getPost( "sortString"))) ;
-        $brandModel  = new \App\Models\BrandModel();
-
-        for ( $i=0; $i < count ($sort); $i++ ) {
-            $brand = $brandModel->find( $sort[ $i ] );
-
-            $brandModel->save ( [
-                "id"    => $brand['id'],
-                'sort'  => $i,
-
-            ] );
+        $session 		= session();
+        
+        if (!$this->validate( [
+			'sort'   => 'required',
+            'sort.*' => 'is_natural_no_zero', // each element must be a positive integer (ID)
+		] )) {
+            return redirect()->back()->withInput();
         }
 
+        $sort       = $this->request->getPost( "sort");
+        $brandModel = new BrandModel();
+
+        foreach ($sort as $position => $id) { $brandModel->update($id, ['sort' => $position]); }
+
+        return redirect()->back()->withInput();
 
         // return nothing ... sorting was performed!
 
@@ -75,7 +79,23 @@ class BrandController extends BaseController
 
     private function getBrandList ( $supplier_id ) {
 
-        $brandModel = new \App\Models\BrandModel();
-        print_r( json_encode( $brandModel->select(["id", "name"])->where("supplier_id", $supplier_id)->orderBy("sort", "ASC")->findAll() ) );
+        return json_encode( (new BrandModel())
+                    ->select(["id", "name"])
+                    ->where("supplier_id", $supplier_id)
+                    ->orderBy("sort", "ASC")
+                    ->findAll() ) ;
+    }
+
+
+    public function search () {
+
+        $name = $this->request->getGet('name'); 
+        $query = (new BrandModel())->select(["id", "name"])->orderBy("sort", "ASC");
+
+        return strlen( $name ) <= 0 ? 
+            json_encode( $query->findAll() ) : 
+            json_encode( $query->like('name', $name )->findAll() ) ;
+        
+
     }
 }

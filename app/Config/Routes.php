@@ -34,36 +34,50 @@ $routes->setAutoRoute(true);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 //$routes->get('/', 'Home::index');
-$routes->get('/', 'RetailController::index');
+$routes->get('/', 'Home::index');
 $routes->get('/sales', 'SalesController::index');
 $routes->post('/sales', 'SalesController::store');
+$routes->post('/sales/ajax-sales-entry', 'SalesController::ajaxNewSalesEntry');
+
 
 $routes->get('/supplies', 'SuppliesController::index');
 $routes->post('/supplies', 'SuppliesController::store');
 $routes->get('/supplies/ajaxSearchList/(:alpha)', 'SuppliesController::ajaxSearchList/$1');
-$routes->get('/supplies/ajaxGetLastProduct/', 'SuppliesController::ajaxGetLastProduct/');
+
 
 // ---- suppliers ---
 $routes->get('/suppliers', 'SupplierController::index');
-$routes->post('/suppliers/search', 'SupplierController::search');
-$routes->post('/suppliers', 'SupplierController::store');
-$routes->post( '/suppliers/delete', 'SupplierController::destroy');
+$routes->post('/suppliers/create', 'SupplierController::create');
+$routes->delete( '/suppliers/(:num)', 'SupplierController::destroy/$1');
 $routes->post( '/suppliers/sort', 'SupplierController::sort');
+$routes->get('/suppliers/search', 'SupplierController::search');
 
-$routes->get('/product/autocomplete_search', 'ProductController::ajaxAutocompleteSearch');
 
-// ---- barcodes ---
-$routes->get( '/barcode/create', 'ProductController::ajaxBarcodeCreate'); // create a barcode based on supplier & brand
-$routes->get( '/barcode/search/(:any)', 'ProductController::ajaxBarcodeSearch/$1'); // create a barcode based on supplier & brand
+
+// ---- products ---
+$routes->get( '/products', 'ProductController::ajaxBarcodeSearch'); 
+
+
+
 
 
 // ---- brands ---
-$routes->get( '/brands/(:num)', 'BrandController::index/$1');
-$routes->post('/brands/(:num)', 'BrandController::store/$1');
-$routes->post( '/brands/delete/(:num)', 'BrandController::destroy/$1');
+$routes->get( '/brands', 'BrandController::index');
+$routes->post('/brands/create', 'BrandController::create');
+$routes->delete( '/brands/(:num)', 'BrandController::destroy/$1');
 $routes->post( '/brands/sort', 'BrandController::sort');
+//$routes->get( '/brands/search/(:any)', 'BrandController::search/$1');
+
+// ---- suppliers ---
+$routes->get('/measuring_units', 'MeasuringUnitController::index');
+$routes->post('/measuring_units/create', 'MeasuringUnitController::create');
+$routes->delete( '/measuring_units/delete/(:num)', 'MeasuringUnitController::destroy/$1');
+$routes->post( '/measuring_units/sort', 'MeasuringUnitController::sort');
+$routes->get('/measuring_units/search', 'MeasuringUnitController::search');
 
 
+
+/*
 // ---- Categories ---
 $routes->get(  '/categories', 'CategoryController::index');
 $routes->get( '/categories/search', 'CategoryController::search');
@@ -79,7 +93,7 @@ $routes->get('/invoices/ajaxRemoveInvoiceProduct/(:num)', 'InvoiceController::aj
 $routes->post('/invoices/ajaxUpdateInvoiceDiscount/(:num)', 'InvoiceController::ajaxUpdateInvoiceDiscount/$1');
 $routes->get('/invoices/calculate/(:num)', 'InvoiceController::calculateInvoiceSum/$1');
 
-
+*/
 
 /*
  * --------------------------------------------------------------------
