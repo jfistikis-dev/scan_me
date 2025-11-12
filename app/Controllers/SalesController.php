@@ -20,21 +20,21 @@ class SalesController extends BaseController
         $product    = (new ProductModel())->getProductByBarcode( $barcode );
         
         return !$product ? 
-                    $this->response->setJSON( [ 
-                        'data'   => null,
-                        'log'    => null,
-                        'html'   => '' 
-                    ] ): 
-                    $this->response->setJSON( [ 
-                        'data'   => $product,
-                        'html'   => view('components/sales_item_entry', [ 'item' => $product ] ), 
-                        'log'    => (new ProductLogModel())
-                                            ->select('product_logs.*, measuring_units.name as measuring_unit_name')
-                                            ->join( "measuring_units", "measuring_units.id = product_logs.measuring_unit_id", "left" )
-                                            ->where( "product_id", $product[ 'id' ] )
-                                            ->orderBy( "id", "DESC" )
-                                            ->findAll( 15, 0 )
-                    ] );
+                $this->response->setJSON( [ 
+                    'data'   => null,
+                    'log'    => null,
+                    'html'   => '' 
+                ] ): 
+                $this->response->setJSON( [ 
+                    'data'   => $product,
+                    'html'   => view('components/sales_item_entry', [ 'item' => $product ] ), 
+                    'log'    => (new ProductLogModel())
+                                        ->select('product_logs.*, measuring_units.name as measuring_unit_name')
+                                        ->join( "measuring_units", "measuring_units.id = product_logs.measuring_unit_id", "left" )
+                                        ->where( "product_id", $product[ 'id' ] )
+                                        ->orderBy( "id", "DESC" )
+                                        ->findAll( 15, 0 )
+                ] );
 
 
     }
@@ -57,8 +57,10 @@ class SalesController extends BaseController
         }
 
         $productModel       = new ProductModel();
-        $productLogModel   = new ProductLogModel();
+        $productLogModel    = new ProductLogModel();
         $basket_products    = $this->request->getPost( "products");
+        $group_uid          = date('Ymd_His') . '_' . substr(md5(uniqid(mt_rand(), true)), 0, 5);
+
 
         // Updating product's stock && create a sales history
         foreach ($basket_products as $product ) {
@@ -73,7 +75,8 @@ class SalesController extends BaseController
                 "quantity"          => $product['basketQuantity'],
                 "selling_price"     => $product['basketPrice'],
                 "old_stock"         => $product['data']['stock'],
-                "new_stock"         => $product['data']['stock'] - $product['basketQuantity']
+                "new_stock"         => $product['data']['stock'] - $product['basketQuantity'],
+                "group_uid"         => $group_uid
             ]);
         }
         return  $this->response->setJSON( [ 'success' => lang('Notification.title_save_success') ] );

@@ -14,10 +14,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- jQuery first, then Bootstrap JS -->
     <script src="<?php echo base_url("js/jquery-3.6.0.min.js") ?>"></script>
-
-    <script src="<?php echo base_url("js/jquery-ui.min.js") ?>"></script>
+    
     
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="<?= base_url("css/bootstrap/bootstrap.min.css" ) ?>" type="text/css"/>
@@ -29,11 +28,19 @@
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="<?= base_url("css/bootstrap/bootstrap-icons.css" ) ?>">
-
        
     <!-- input mask -->
     <script type="text/javascript" src="<?php echo base_url("js/jquery.inputmask.min.js") ?>" ></script> 
     <script type="text/javascript" src="<?php echo base_url("js/number-functions.js") ?>" ></script> 
+
+    <!-- Datatables -->
+    <link rel="stylesheet" href="<?= base_url("css/dataTables.min.css") ?>">
+    <script type="text/javascript" src="<?php echo base_url("js/dataTables.min.js") ?>" ></script> 
+    
+    <!-- Jquery UI -->
+    <script src="<?= base_url("js/jquery-ui.min.js") ?>"></script>
+
+    
 
 </head>
  
@@ -52,27 +59,11 @@
 
  
 <!-- FOOTER: DEBUG INFO + COPYRIGHTS -->
-<!--
-<footer class="text-center  bg-light text-muted fixed-bottom p-2">
-	
-    Page rendered in <b>{elapsed_time}</b> seconds in <b><?= strtoupper( ENVIRONMENT ) ?></b> environment!<br/>
-    &copy; <?= date('Y') ?> CodeIgniter Foundation. CodeIgniter is open source project released under the MIT
-			open source licence. 
-
+<footer class="text-center  bg-light text-muted fixed-bottom p-2 fs-7">
+    &copy; <?= date('Y') ?> — Έξυπνη διαχείριση προϊόντων με barcode. Απλή. Γρήγορη. Αποτελεσματική. 
 </footer>
--->
-<!-- SCRIPTS -->
-
-    <!-- React Script -->
-    <!--<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script> -->
-    
-    <?php if (isset($js_file)): ?>
-        <script src="<?= base_url('js/pages/' . $js_file) ?>"></script>
-    <?php endif; ?>
 
 
-<!-- -->
 
 </body>
 </html>

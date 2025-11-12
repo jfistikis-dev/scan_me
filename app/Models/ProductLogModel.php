@@ -12,7 +12,7 @@ class ProductLogModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['type_id', 'product_id','supplier_id','brand_id','measuring_unit_id','quantity','buying_price','selling_price','wholesale_discount','reorder_quantity', 'old_stock','new_stock' ];
+    protected $allowedFields    = ['type_id', 'product_id','supplier_id','brand_id','measuring_unit_id','group_uid', 'quantity','buying_price','selling_price','wholesale_discount','reorder_quantity', 'old_stock','new_stock' ];
 
 
 

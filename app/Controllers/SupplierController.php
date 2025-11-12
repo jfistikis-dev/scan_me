@@ -10,9 +10,7 @@ use App\Models\ProductModel;
 
 class SupplierController extends BaseController
 {
-    public function index()
-    {
-        //
+    public function index() {
         return $this->getSupplierList ();
     }
 

@@ -17,7 +17,7 @@
                 <div class='row'>
                     <div class='col-md-8'>
                         <div class='card-title'>
-                            <div class='fs-5'><?= $item['name'] ?></div>
+                            <div class='fs-5'><?= $item['description'] ?></div>
                             <div class='fs-7'>ΑΠΟΘΕΜΑ :: <span class='text-<?= $color ?>'><?= $item['stock'] ?> <?= $item['measuring_name'] ?></span></div>                                   
                         </div>
                         

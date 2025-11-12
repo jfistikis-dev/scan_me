@@ -39,7 +39,7 @@ class SuppliesController extends BaseController
         
         $validation         = service('validation');
         $convertData        = ['measuring_unit_id', 'stock', 'reorder_quantity', 'buying_price', 'selling_price', 'quantity', 'wholesale_discount'];
-        $remember_me_array  = ["supplier_id", "brand_id", "measuring_unit_id", "name","reorder_quantity","selling_price","buying_price","wholesale_discount"];
+        $remember_me_array  = ["supplier_id", "brand_id", "measuring_unit_id", "description","reorder_quantity","selling_price","buying_price","wholesale_discount"];
 
 
         $rules = [
@@ -48,7 +48,7 @@ class SuppliesController extends BaseController
             'brand_id'          => 'required|numeric',
             'measuring_unit_id' => 'required|numeric',
                         
-            'name'              => 'required',
+            'description'       => 'required',
 
             'stock'             => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
             'reorder_quantity'  => 'required|regex_match[/^-?[0-9]*\.?[0-9]+$/]',
@@ -60,15 +60,14 @@ class SuppliesController extends BaseController
         ];
         
         $data = $this->request->getPost();
+        
         foreach ( $convertData as $value ) {
             $data[ $value ]    = str_replace(',', '.', $this->request->getPost($value));
             $data[ $value ]    = $this->request->getPost($value)  == "" ? "0" : $this->request->getPost($value ); 
-
         }
        
         if (! $this->validateData($data, $rules)) {
-            session()->setFlashdata('errors', $validation->getErrors());
-            return redirect()->back()->withInput();
+            return $this->response->setJSON( ['error' => $validation->getErrors()] );
         }
 
         
@@ -83,16 +82,21 @@ class SuppliesController extends BaseController
         unset ( $data['quantity']);
         
         // save/update data 
-        $product != null ? $productModel->set($data)->where('id', $product['id'])->update() : $productModel->insert($data); 
+        $product_id = $product != null ? $productModel->set($data)->where('id', $product['id'])->update() : $productModel->insert($data); 
+        $product_id = $product_id == 1 ? $product['id'] : $product_id;
+        
+        $group_uid  = date('Ymd_His') . '_' . substr(md5(uniqid(mt_rand(), true)), 0, 5);
 
         //create a log
-        if ( $product != null ) {
+        if ( $product_id != null ) {
             $data['type_id']    = PRODUCT_LOG_TYPE_BUYING;
-            $data['product_id'] = $product['id'] ; 
+            $data['product_id'] = $product_id ; 
             $data['quantity']   = $quantity;
-            $data['old_stock']  = $product['stock'];
+            $data['old_stock']  = $product == null ? 0 : $product['stock'];
             $data['new_stock']  = $data['stock'];
+            $data['group_uid']  = $group_uid;
 
+            //dd ( $data );
             $productLogModel->insert($data);
         }
         
@@ -106,78 +110,11 @@ class SuppliesController extends BaseController
         
         }
 
-        session()->setFlashdata('success', 'To προϊόν αποθηκεύτηκε επιτυχώς.' );
-        $this->response->redirect( base_url('/supplies') );
-
-
-    }
-
-    public function ajaxGetList($entity)
-    { // get a list of values for any of : [supplier, brand, technique]
-
-        switch ($entity) {
-
-            case "supplier" :
-                {
-
-
-                }
-                break;
-
-            case "brand" :
-                {
-
-                    $brand = new BrandModel();
-                    return json_encode($brand->findAll());
-
-                }
-
-            case "technique" :
-                {
-                    return "pipes!";
-                }
-                break;
-
-        }
-
-
-    }
-
-    public function ajaxSearchList($entity)
-    { // get a list of values for any of : [supplier, brand, technique]
-
-        switch ($entity) {
-
-            case "supplier" :
-                {
-
-                    $supplierModel = new \App\Models\SupplierModel();
-                    print_R(json_encode($supplierModel->select("name")->like("name", $this->request->getVar("keyphrase"))->findAll()));
-
-                }
-                break;
-
-            case "brand" :
-                {
-
-                    $brand = new BrandModel();
-                    return json_encode($brand->findAll());
-
-                }
-
-            case "technique" :
-                {
-                    return "pipes!";
-                }
-                break;
-
-        }
+       return $this->response->setJSON( ['success' => 'To προϊόν αποθηκεύτηκε επιτυχώς.'] );
 
 
     }
 
    
-
-
 
 }

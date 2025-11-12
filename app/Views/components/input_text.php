@@ -15,7 +15,7 @@
     $uniqueId = $name . '_' . uniqid();
 ?>
 
-<div class="input-group">
+<div class="input-group conponent-input">
     <div class="form-floating position-relative">
 
         <!-- Only active checkbox -->

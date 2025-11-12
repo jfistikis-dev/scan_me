@@ -1,5 +1,5 @@
 <!-- Html content -->
-<div class="d-flex flex-row position-relative ">  
+<div class="d-flex flex-row position-relative conponent-input">  
     
     <!-- Remember me checkbox -->
     <div class="position-absolute top-0 start-0" style="z-index:100;margin-left:-5px;margin-top:-10px">
@@ -74,6 +74,7 @@
         let parent_exists   = false;
         let parent_id       = null;
         let parent_value    = null;
+ 
         
         <?php if ( isset ( $depends_on_id ) && strlen($depends_on_id) > 1 ) : ?>
             parent          = $("select[name='<?= $depends_on_id ?>']").length > 0 ? $("select[name='<?= $depends_on_id ?>']") : null;
@@ -219,7 +220,7 @@
     
         async function ajaxSortModalList () {
 
-            var list = $("#"+modal_name+" ul");
+            var list = $("#"+modal_name+" ul.sortable");
 
             await list.sortable ({
                 

@@ -193,3 +193,29 @@ ul a.dropdown-item:active { color: #1e2125; background-color : #fff; }
 .list-group.basket>.basket-item { cursor: pointer; }
 .list-group.basket>.basket-item:hover { background-color : #448dfa; color:white; }
 .fs-7 { font-size: 0.75rem; }
+
+/*
+ * DataTable
+ */
+
+.dt-info, .dt-length {
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+#productTable tbody tr:hover {
+  background-color: #448dfa;
+  color:white;
+  cursor: pointer;
+}
+
+#productTable tbody tr.selected td {
+  background-color: #448dfa;
+  color:white;
+}
+
+.btn.btn-medium {
+  cursor: pointer;
+  font-size: 0.9rem !important;
+}
+

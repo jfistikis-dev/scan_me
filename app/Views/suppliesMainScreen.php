@@ -20,7 +20,7 @@
         </div>
         <!--<div id="dymoLabel"><button type="button" href="#" class="btn btn-primary mt-3 btn-lg gap-2"></button> </div>-->
         <div class="card border-0">
-            <button onclick="location=window.location='<?= base_url(); ?>'" class="btn btn-primary mt-3 btn-lg gap-2 btn-exit" type="button">
+            <button onclick="location=window.location='<?= base_url(); ?>'" class="btn btn-primary mt-2 btn-lg gap-2 btn-exit" type="button">
                 <i class="bi bi-arrow-bar-left"></i> Έξοδος
             </button>
         </div>
@@ -34,11 +34,11 @@
         <div class="col-md-4 position-relative">
             <div class="card mt-2" >
                 <div class="card-body" >
-                    <div class="row" style="overflow-y: scroll;height:calc(100vh - 340px);">
-                        <ul class="list-group list-group-flush product-log-list"></ul>
-                    </div>
+                    <?= view("components/product_log", [
+                        'url' => base_url('products?barcode='),
+                        'height'    => 'calc(100vh - 400px)'
+                    ]) ?>
                 </div>
-                    
             </div>
         </div>
 
@@ -64,7 +64,7 @@
                     <div class="col-12 form-floating">
                    
                     <?= view('components/input_text', [
-                            'name'          => 'name',
+                            'name'          => 'description',
                             'placeholder'   => 'Περιγραφή προϊόντος',
                             'label'         => 'Περιγραφή προϊόντος',
                             'disabled'      => false,
@@ -88,7 +88,7 @@
                                 'create'    => 'create',
                                 'delete'    => 'delete', 
                                 'sort'      => 'sort',
-                                'search'    => 'search', 
+                                'search'    => '', 
                                 ],
                             'items'         => $suppliers ,
                             'delete_text'   => 'Child Brands and products will be delete too !! Do you want to proceed? '
@@ -135,10 +135,10 @@
                                     'create'    => 'create',
                                     'delete'    => 'delete', 
                                     'sort'      => 'sort',
-                                    'search'    => 'search', 
+                                    'search'    => '', 
                                     ],
-                                'depends_on_id' => '',
-                                'depends_on_name' => '',
+                                'depends_on_id'     => '',
+                                'depends_on_name'   => '',
                                 'items'         => $m_units
                                 
                                 
@@ -323,7 +323,10 @@
     // before submitting the form check that the following inputs have input : barcode, brand, category, quantity
     $( "#productForm" ).submit(function( event ) {
 
-        let required_fields = [ "#barcode", "#supplier_id_select",  "#brand_id_select",  "#measuring_unit_id_select", "input[name='quantity']", "input[name='name']" ];
+        event.preventDefault();
+        event.stopPropagation();
+        
+        let required_fields = [ "#barcode", "#supplier_id_select",  "#brand_id_select",  "#measuring_unit_id_select", "input[name='quantity']", "input[name='description']" ];
         let submit_form = true;
 
         required_fields.forEach( function ( field ) {
@@ -341,8 +344,46 @@
             alert("Πρεπει να συμπληρωσετε τα απαραιτητα πεδια");
             return false;   
         }
-        
-        $( "#productForm" ).submit();
+
+        let data = [];
+        $(this).find('input, select').each(function() {
+            // do not add checkboxes #
+            if ( $(this).hasClass('form-check-input') || typeof $(this).attr('name') == 'undefined' )  { return true; }
+            
+            if ( $(this).hasClass('number-input')) { 
+                data.push({ name: $(this).attr('name'), value: SFNumberFunctions._parseNumber($(this).val())} ); return true; 
+            }
+            else {
+                // normal components
+                data.push( { name: $(this).attr('name'), value: $(this).val() } ); 
+            }
+            
+        });
+
+       // console.log ( data );
+
+        $.ajax({
+            type: "POST",
+            url: "<?= base_url('supplies' ) ?>",
+            data:  data,
+            dataType: "json",
+
+            success: function(serverData) {
+                if ( serverData != "" && serverData != null ) {
+                    show_toast(serverData.success, 'success');
+                }
+                __clearProductLogs ();
+                __clearProductValues ( true );
+               
+            },
+
+            error: function(serverData) {
+             
+                show_toast(serverData.error, 'danger');
+             
+            }
+
+        })
         
     });
 
@@ -397,7 +438,7 @@
         
 
         $.ajax({
-            url: "<?= base_url('products?barcode=') ?>" + barcode,
+            url: "<?= base_url('products/ajaxBarcodeSearch/') ?>" + barcode,
             method: "get",
             dataType: "json",
 
@@ -406,10 +447,10 @@
 
                 if ( serverData.data != "" && serverData.data != null ) { 
                     __fillProductValues ( serverData.data ); 
-                    __renderProductLogs ( serverData.log );
+                    __renderProductLogsFromProductData ( serverData );
                 }
                 else { 
-                    __clearProductValues (); 
+                    __clearProductValues ( ); 
                 }
             }
         });
@@ -418,7 +459,7 @@
 
     function __fillProductValues ( product ) {
         //console.log ( product );
-        $("input[name='name']").val( product.name ).trigger('change');
+        $("input[name='description']").val( product.description ).trigger('change');
         $("input[name='stock']").val( product.stock );
         $("input[name='show_stock']").val( SFNumberFunctions._displayNumber (product.stock, 2 ) );
         $("input[name='reorder_quantity']").val( SFNumberFunctions._displayNumber (product.reorder_quantity,2 ) ).trigger('change')
@@ -435,64 +476,26 @@
         });
     }
 
-    function __clearProductValues () {
-        $("input[name='name']").val("").trigger('change');
-        $("input[name='stock']").val("").trigger('change');
-        $("input[name='show_stock']").val("").trigger('change');
-        $("input[name='reorder_quantity']").val("").trigger('change');
-        $("input[name='selling_price']").val("").trigger('change');
-        $("input[name='buying_price']").val("").trigger('change');
-        $("input[name='wholesale_discount']").val("").trigger('change');
-        $("select[name='supplier_id'] option:first").prop('selected', true)
-        $("select[name='supplier_id']").trigger('change');
-        $("select[name='measuring_unit_id']").val("").trigger('change');
-    }
+    function __clearProductValues ( clear_all = false ) {
 
-    function __clearProductLogs () {
-        let $list = $(".product-log-list");
-        $list.empty();
-    }
 
-    function __renderProductLogs ( log ) {
-        
-        //console.log ( log )
-        if ( log == null || log.length == 0 ) return;
-        
-        let $list = $(".product-log-list");
-        let html = "";
-
-        $list.empty();
-        
-        log.forEach ( function ( log_entry ) {
-            if ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_BUYING ?>") {
-                html += "<li class='text-sm ";
-                html += log_entry.quantity >= 0 ? 'bg-success' : 'bg-warning' ;
-                html += " text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>" + __toEuropeanDate ( log_entry.created_at );    
-                html += log_entry.quantity > 0 ? " - ΑΓΟΡΑ : " : " - ΡΥΘΜ. : ";
-                html += log_entry.quantity + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.buying_price, 2);
-                html += '</li>';
-            }
-            else if ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_SELLING ?>") {
-                html += "<li class='text-sm bg-danger text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>" + __toEuropeanDate ( log_entry.created_at );    
-                html += " - ΠΩΛΗΣΗ : " ;
-                html += log_entry.quantity + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.selling_price, 2);
-                html += '</li>';
-            }
+        $('#productForm').find('input, select').each ( function () {
             
-        });
+            if ( $(this).attr('name') === 'barcode'  &&  clear_all== false ) { return true; }
+            
+            let $input = $(this);
+            let $checkbox = $input.parents('.conponent-input').find('input[type="checkbox"]');
+            !$checkbox.prop('checked') ? $input.val("").trigger('change') : '';
 
-        $list.append(html);
+            $input.removeClass('is-valid');
+            
 
+
+        })
+       
     }
 
-    function __toEuropeanDate(datetimeStr) {
-        // Split date and time
-        const [datePart, timePart] = datetimeStr.split(' ');
-        const [year, month, day] = datePart.split('-');
-        
-        // Return in European format
-        return `${day}-${month}-${year} ${timePart}`;
-    }
+    
 </script>
 
 <?=$this->endSection()?>

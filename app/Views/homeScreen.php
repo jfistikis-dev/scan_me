@@ -26,20 +26,20 @@
 				<p>ΠΡΟΜΗΘΕΙΕΣ</p>
 			  </blockquote>
 			  <figcaption class="blockquote-footer mb-0 text-white">
-				Someone famous in <cite title="Source Title">Source Title</cite>
-			  </figcaption>
+				<cite title="Source Title">Αγορά/Μεταβολή</cite>  προϊόντων 			  
+			</figcaption>
 			</figure>
 		  </div>
 		</div>
 
-		<div class="col-sm-6 col-lg-6 mb-6 p-4" id="labels">
+		<div class="col-sm-6 col-lg-6 mb-6 p-4" id="products">
 		  <div class="card text-white text-center p-5 front-card">
 			<figure class="mb-0">
 			  <blockquote class="blockquote">
 				<p>ΠΡΟΪΌΝΤΑ</p>
 			  </blockquote>
 			  <figcaption class="blockquote-footer mb-0 text-white">
-				Someone famous in <cite title="Source Title">Source Title</cite>
+				Εμφάνιση <cite title="Source Title">προϊόντων</cite> σε λίστα
 			  </figcaption>
 			</figure>
 		  </div>
@@ -70,7 +70,7 @@
 		
 	$("#sales").on("click", function() { window.location.href = 'sales';});
 	$("#imports").on("click", function() {window.location.href = 'supplies';});
-	//$("#labels").on("click", function() {window.location.href = 'labels';});
+	$("#products").on("click", function() {window.location.href = 'products';});
 	//$("#stats").on("click", function() {window.location.href = 'stats';});
 	
 	

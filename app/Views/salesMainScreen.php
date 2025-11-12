@@ -62,9 +62,10 @@
             <!-- Product Log -->
             <div class="card mt-3" >
                 <div class="card-body" >
-                    <div class="row" style="overflow-y: scroll;height:calc(100vh - 540px);">
-                        <ul class="list-group list-group-flush product-log-list" data-product-id="0"></ul>
-                    </div>
+                    <?= view("components/product_log", [
+                        'url' => base_url('products/ajaxBarcodeSearch/'),
+                        'height'    => 'calc(100vh - 450px)'
+                    ]) ?>
                 </div>
                     
             </div>
@@ -244,59 +245,6 @@
             })
         }
     
-        function __clearProductLogs () {
-            let $list = $(".product-log-list");
-            $list.attr("data-product-id", "0");
-            $list.empty();
-        }
-
-        function __renderProductLogs ( log ) {
-        
-            //console.log ( log )
-            if ( log == null || log.length == 0 ) return;
-            
-            let $list = $(".product-log-list");
-            let html = "";
-
-            $list.empty();
-            
-            log.forEach ( function ( log_entry ) {
-                if ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_BUYING ?>") {
-                    html += "<li class='text-sm ";
-                    html += log_entry.quantity >= 0 ? 'bg-success' : 'bg-warning' ;
-                    html += " text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>" + __toEuropeanDate ( log_entry.created_at );     
-                    html += log_entry.quantity > 0 ? " - ΑΓΟΡΑ : " : " - ΡΥΘΜ. : ";
-                    html += log_entry.quantity + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.buying_price, 2);
-                    html += '</li>';
-                }
-                else  {
-                    html += "<li class='text-sm bg-danger text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>" + __toEuropeanDate ( log_entry.created_at );    
-                    html += " - ΠΩΛΗΣΗ : " ;
-                    html += log_entry.quantity + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.selling_price, 2);
-                    html += '</li>';
-                }
-                $(".product-log-list").attr("data-product-id", log_entry.product_id);
-                
-            });
-
-            $list.append(html);
-
-        }
-                
-        function __ajaxGetProductLog ( barcode ) {
-            $.ajax({
-            url: "<?= base_url('products?barcode=') ?>" + barcode,
-            method: "get",
-            dataType: "json",
-
-            success: function(serverData) {
-                __clearProductLogs ();
-                serverData.log != "" && serverData.log != null ? __renderProductLogs ( serverData.log ) : null;
-            }
-
-        });
-        }
-
         function __toEuropeanDate(datetimeStr) {
             // Split date and time
             const [datePart, timePart] = datetimeStr.split(' ');
@@ -338,7 +286,8 @@
                                     
                                     product != null ? __updateProductQuantity ( product, 1) : __addProductToBasket( serverData );
 
-                                    __renderProductLogs( serverData.log );
+                                    __renderProductLogsFromProductData ( serverData );
+
                                 
                                 } else {
                                     alert("Product not found!");

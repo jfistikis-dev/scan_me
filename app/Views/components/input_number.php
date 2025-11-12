@@ -25,7 +25,7 @@
 ?>
 
 <?php if ( $label != '' ): ?>
-    <div class="input-group">
+    <div class="input-group conponent-input">
 <?php endif; ?>
 
     <?php if ( $remember_me || $is_floating   ): ?>
