@@ -10,7 +10,8 @@ use App\Models\ProductLogModel;
 class SalesController extends BaseController
 {
 	public function index(): string   {
-	    return view('salesMainScreen');
+        $data['title'] = "scan-ME :: Ταμείο / Πωλήσεις προϊόντων";
+	    return view('salesMainScreen', $data);
 	}
 
 

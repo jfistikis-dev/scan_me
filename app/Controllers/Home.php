@@ -6,6 +6,7 @@ class Home extends BaseController
 {
     public function index()
     {
-        return view('homeScreen');
+        $data['title'] = "scan-ME :: Κεντρικό Μενου";
+        return view('homeScreen', $data);
     }
 }

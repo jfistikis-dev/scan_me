@@ -11,7 +11,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class ProductController extends BaseController
 {
     public function index(): string    {
-        return view('productsMainScreen');
+        $data['title'] = "scan-ME :: Λίστα προϊόντων";
+        return view('productsMainScreen', $data);
     }
 
 
