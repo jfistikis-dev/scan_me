@@ -20,7 +20,7 @@ b. It is implemented as part of a larger system but has no external dependencies
 If runnning Xampp/Wamp/Lamp just add to the htdocs and run : 
 php spark migrate
 
--[WARNING]
+-[!WARNING]
 > - If running inside docker the name of mySQL container should be db or change it to whatever u like in constants.php -> DOCKER_DB_NAME. This ensures smooth operation when accessing db inside and outside the docker containers.
 
 
