@@ -4,16 +4,16 @@
 
 Scan ME is a Codeigniter 4 app that handles barcode scanning enabling user to perform basic functions of a point-of-sales system like : 
 
-a. Insert products with barcode, category, prices , prudchase discount etc.
-b. Sell any previsouly inserted product , by scanning the barcode and adjusting price/quantity 
-c. View a list of inserted products, log of purchases/sales , export to excel
+> - Insert products with barcode, category, prices , prudchase discount etc.
+> - Sell any previsouly inserted product , by scanning the barcode and adjusting price/quantity 
+> - View a list of inserted products, log of purchases/sales , export to excel
 
 It is ideal for anyone that requires a basic POS with stock updating
 
 ## NOTICE
 
-a. This is a local implementation so it is not secure enough for hosting on public servers.
-b. It is implemented as part of a larger system but has no external dependencies nor requires internet access, to function. 
+> - This is a local implementation so it is not secure enough for hosting on public servers.
+> - It is implemented as part of a larger system but has no external dependencies nor requires internet access, to function. 
 
 ## INSTALLATION
 
