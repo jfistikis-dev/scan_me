@@ -1,52 +1,28 @@
-# CodeIgniter 4 Application Starter
+# Scan ME basic
 
-## What is CodeIgniter?
+## Scan ME basic
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Scan ME is a Codeigniter 4 app that handles barcode scanning enabling user to perform basic functions of a point-of-sales system like : 
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+a. Insert products with barcode, category, prices , prudchase discount etc.
+b. Sell any previsouly inserted product , by scanning the barcode and adjusting price/quantity 
+c. View a list of inserted products, log of purchases/sales , export to excel
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+It is ideal for anyone that requires a basic POS with stock updating
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## NOTICE
 
-## Installation & updates
+a. This is a local implementation so it is not secure enough for hosting on public servers.
+b. It is implemented as part of a larger system but has no external dependencies nor requires internet access, to function. 
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## INSTALLATION
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+If runnning Xampp/Wamp/Lamp just add to the htdocs and run : 
+php spark migrate
 
-## Setup
+-[WARNING]
+> - If running inside docker the name of mySQL container should be db or change it to whatever u like in constants.php -> DOCKER_DB_NAME. This ensures smooth operation when accessing db inside and outside the docker containers.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
-
-## Important Change with index.php
-
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
-
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
 
 ## Server Requirements
 
@@ -66,3 +42,5 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+
+

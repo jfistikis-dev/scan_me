@@ -91,6 +91,9 @@
 
         $(document).ready(function(){
             
+            let barcode = '';
+            let timer;
+            
             var table = $('#productTable').DataTable({
                 serverSide: true,
                 processing: true,
@@ -160,53 +163,35 @@
                 table.ajax.reload();
             });
 
-            // Press Enter triggers search
-            //$('#searchName').on('keyup', function(e){
-            //    if (e.key === 'Enter') {
-            //        table.ajax.reload();
-            //    }
-            //});
+            // Barcode scanner on search
+            $(document).on('keydown', function(e) {
+                // Reset timer if the user types/scans again soon
+                clearTimeout(timer);
 
-            // Press Enter triggers search
-            //$('#searchName').on('change', function(e){
-            //    var input = $(this).val ( );
-            //    $(this).val ( input.trim().replace(/^@/, '') );
-            //});
-
-            $(function() {
-                let barcode = '';
-                let timer;
-
-                $(document).on('keydown', function(e) {
-                    // Reset timer if the user types/scans again soon
-                    clearTimeout(timer);
-
-                    // Check if key is Enter or Tab — scanner done
-                    if (e.key === 'Enter' || e.key === 'Tab') {
-                        if (barcode.length > 3) { // avoid false triggers
-                            
-                            console.log('Scanned barcode:', barcode);
-                            $barcodeStr = barcode.substring (1);
-                            $("#searchName").val($barcodeStr);
-                            table.ajax.reload();
+                // Check if key is Enter or Tab — scanner done
+                if (e.key === 'Enter' || e.key === 'Tab') {
+                    if (barcode.length > 3) { // avoid false triggers
                         
-                        }
-                        barcode = '';
-                        return;
+                        console.log('Scanned barcode:', barcode);
+                        
+                        $barcodeStr = barcode.substring (1);
+                        $("#searchName").val($barcodeStr);
+                        table.ajax.reload();
+                    
                     }
+                    barcode = '';
+                    return;
+                }
 
-                    // Ignore special keys
-                    if (e.key.length === 1) {
-                        barcode += e.key;
-                    }
+                // Ignore special keys
+                if (e.key.length === 1) {
+                    barcode += e.key;
+                }
 
-                    // Reset if no key pressed for 100ms (manual typing cutoff)
-                    timer = setTimeout(() => barcode = '', 100);
-                });
-            
+                // Reset if no key pressed for 100ms (manual typing cutoff)
+                timer = setTimeout(() => barcode = '', 100);
             });
-            
-
+        
             // Export button
             $('#exportBtn').on('click', function(e){
                 e.preventDefault();
@@ -243,8 +228,6 @@
             $('#productTable').on('click', 'tr', function(){
                 __ajaxGetProductLog ( $(this).find('td:eq(1)').text() );
             })
-
-
 
 
         });

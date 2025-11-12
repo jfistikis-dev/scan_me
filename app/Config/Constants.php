@@ -80,4 +80,5 @@ defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125);    // highest a
 
 define ('PRODUCT_LOG_TYPE_BUYING'       , 1);
 define ('PRODUCT_LOG_TYPE_SELLING'     , 2);
+define ('DOCKER_DB_NAME'            , 'db');
 
