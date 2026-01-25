@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\ProductModel;
 
 class ProductLogModel extends Model
 {
@@ -42,4 +43,31 @@ class ProductLogModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+
+    public function __saveProductLogRaw( $data, $type_of_log = PRODUCT_LOG_TYPE_BUYING ) {
+
+        // first time we insert it ?? then stock was originally => 0 else => new stock ... became now old_stock!    
+        $product_found    = ( new ProductModel() )->where('barcode' , $data['barcode'])->first();
+
+        //create a log
+        if ( $product_found != null ) {
+            
+            $last_log_found   = $this->where('product_id' , $product_found['id'])->orderBy('id', 'DESC' )->first();
+
+            $data['product_id']     = $product_found['id'];
+            $data['type_id']        = $type_of_log;
+            $data['old_stock']      = $last_log_found == null ? 0 : $last_log_found['new_stock'];
+            $data['new_stock']      = $data['stock'];
+            $data['group_uid']      = date('Ymd_His') . '_' . substr(md5(uniqid(mt_rand(), true)), 0, 5);
+
+            //dd ( $data );
+            $this->insert($data);
+        }
+
+    }
+    
 }
+
+
+

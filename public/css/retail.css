@@ -219,3 +219,89 @@ ul a.dropdown-item:active { color: #1e2125; background-color : #fff; }
   font-size: 0.9rem !important;
 }
 
+
+/* -- Display excel upload area -- */
+#importUploadArea {
+    margin: 20px 0;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.4s ease-in-out;
+    overflow: hidden;
+    max-height: 0;
+}
+
+#importUploadArea.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px; /* Adjust based on your content height */
+    animation: slideDown 0.5s ease forwards;
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+}
+
+/* For smoother closing */
+#importUploadArea.hiding {
+    animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+        display: none;
+    }
+}
+
+/* Keep your existing dropzone styles */
+#dropZone {
+    border: 0px dashed #007bff;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#dropZone:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    border-color: #0056b3;
+}
+
+#dropZone.dragover {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-color: #0056b3;
+}
+
+.progress {
+    height: 25px;
+    border-radius: 5px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+
+
+/* -- endof-Display excel upload area -- */

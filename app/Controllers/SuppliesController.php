@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\BrandModel;
-use App\Models\InvoiceModel;
 use App\Models\InvoiceRowModel;
 use App\Models\MeasuringUnitModel;
 use App\Models\ProductModel;
@@ -72,34 +71,11 @@ class SuppliesController extends BaseController
         }
 
         
-        // get existing product
-        $productModel       = new ProductModel();
-        $productLogModel    = new ProductLogModel();
-        $product            = $productModel->where('barcode', $data['barcode'])->first();
-
-        // update stock
-        $data['stock'] = floatval($data['stock'] ) + floatval($data['quantity'] );
-        $quantity = floatval($data['quantity'] );
-        unset ( $data['quantity']);
+        // save the product        
+        (new ProductModel())->__saveProductRaw ( $data );
         
-        // save/update data 
-        $product_id = $product != null ? $productModel->set($data)->where('id', $product['id'])->update() : $productModel->insert($data); 
-        $product_id = $product_id == 1 ? $product['id'] : $product_id;
-        
-        $group_uid  = date('Ymd_His') . '_' . substr(md5(uniqid(mt_rand(), true)), 0, 5);
-
-        //create a log
-        if ( $product_id != null ) {
-            $data['type_id']    = PRODUCT_LOG_TYPE_BUYING;
-            $data['product_id'] = $product_id ; 
-            $data['quantity']   = $quantity;
-            $data['old_stock']  = $product == null ? 0 : $product['stock'];
-            $data['new_stock']  = $data['stock'];
-            $data['group_uid']  = $group_uid;
-
-            //dd ( $data );
-            $productLogModel->insert($data);
-        }
+        // create a new product log
+        (new ProductLogModel())->__saveProductLogRaw( $data, PRODUCT_LOG_TYPE_BUYING );
         
        
         // deal with remember me fields

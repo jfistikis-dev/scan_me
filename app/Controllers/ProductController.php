@@ -8,6 +8,7 @@ use App\Models\ProductLogModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+
 class ProductController extends BaseController
 {
     public function index(): string    {
@@ -190,6 +191,138 @@ class ProductController extends BaseController
 
         $writer->save('php://output');
         exit;
+    }
+
+    
+    public function import()  {
+
+        try {
+
+            $validation = service('validation');
+            $security   = service('security');
+            
+            // Get CSRF token from header or POST data
+            $csrfConfig     = config('Security');
+            $csrfName       = $csrfConfig->tokenName;
+            $csrfToken      = $this->request->getPost($csrfName) ?? $this->request->getHeaderLine('X-CSRF-TOKEN');
+            
+            // Verify CSRF token
+            if (!$csrfToken || !hash_equals($security->getHash(), $csrfToken)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Invalid CSRF token'
+                ])->setStatusCode(403);
+            }
+            
+            if (!$this->request->isAJAX() ||  $this->request->getMethod() !== 'POST' ) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Invalid request! This is not AJAX or POST request'
+                ]);
+            }
+            
+            // Validate file upload
+            $validation->setRule('excel_file', 'Excel File', 'uploaded[excel_file]|ext_in[excel_file,xlsx,xls]|max_size[excel_file,10240]');
+            
+            if (!$validation->withRequest($this->request)->run()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => implode(' ', $validation->getErrors())
+                ]);
+            }
+            
+            $file = $this->request->getFile('excel_file');
+            
+            if (!$file->isValid() || $file->hasMoved()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Invalid file upload'
+                ]);
+            }
+            
+            // Move file to writable directory
+            $uploadPath = WRITEPATH . 'uploads/';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            $fileName = $file->getRandomName();
+            $file->move($uploadPath, $fileName);
+            $filePath = $uploadPath . $fileName;
+            
+            // Load spreadsheet
+            $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            $spreadsheet = $reader->load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+            
+            // Get data from Excel
+            $data = $worksheet->toArray();
+            
+            $productModel = new ProductModel();
+            $updated = 0;
+            $errors = [];
+
+            // A: ID, B: Barcode, C: Description, D: Category, E: Stock, F: Measuring Unit, G: Reorder Quantity, H: Buying Price, I: Selling Price            
+            foreach ($data as $index => $row) {
+                
+                if ( !is_numeric($row[0]) ) { continue; } // skipping header
+                
+                // check that the barcode exists !! if not ... do not process
+                $product = $productModel->where('barcode', $row[1])->first();
+                if ( !$product ) { $errors[] = "Row " . ($index + 2) . `: Product with barcode $row[1] not found`; continue; }
+                
+                $data = [
+                    'product_id'        => $product['id'],      // for security reasons ... we trust what's inside our DB rather than the excel file 
+                    'barcode'           => $product['barcode'], //in terms of product id & barcode 
+                    'quantity'          => 0,
+                    'description'       => $row[2],
+                    'stock'             => is_numeric($row[4]) ? number_format ($row[4], 2, '.', '') : 0,
+                    'reorder_quantity'  => is_numeric($row[6]) ? number_format ($row[6], 2, '.', '') : 0,
+                    'buying_price'      => is_numeric($row[7]) ? number_format ($row[7], 2, '.', '') : 0,
+                    'selling_price'     => is_numeric($row[8]) ? number_format ($row[8], 2, '.', '') : 0,
+                ];
+
+                // save the product        
+                (new ProductModel())->__saveProductRaw ( $data );
+        
+                // create a new product log
+                (new ProductLogModel())->__saveProductLogRaw( $data, PRODUCT_LOG_TYPE_INVENTORY );
+                
+                $updated++;
+            }
+            
+            // Clean up uploaded file
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            
+            $message = "Επιτυχής ενημέρωση! <br>";
+            $message .= "Ενημερώθηκαν $updated προϊόντα.";
+            
+            if (!empty($errors)) {
+                $message .= "<br><br>Σφάλματα (" . count($errors) . "):<br>";
+                $message .= implode("<br>", array_slice($errors, 0, 5)); // Show first 5 errors
+                
+                if (count($errors) > 5) {
+                    $message .= "<br>... και άλλα " . (count($errors) - 5) . " σφάλματα";
+                }
+            }
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => $message,
+                'updated' => $updated,
+                'errors' => $errors
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Σφάλμα: ' . $e->getMessage()
+            ]);
+        }
+    
+
     }
 
 }

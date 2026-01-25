@@ -50,6 +50,8 @@
 
         $list.empty();
         
+        console.log ( log );
+
         log.forEach ( function ( log_entry ) {
             if ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_BUYING ?>") {
                 html += "<li class='text-sm ";
@@ -60,12 +62,20 @@
                 html += SFNumberFunctions._displayNumber(log_entry.quantity, 2) + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.buying_price, 2);
                 html += '</li>';
             }
-            else  {
+            else if  ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_SELLING ?>") {
                 html += "<li class='text-sm bg-danger text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>";
                 html += __toEuropeanDate ( log_entry.created_at );    
                 html += " - ΠΩΛΗΣΗ : " ;
                 html += SFNumberFunctions._displayNumber ( log_entry.quantity ) + " " + log_entry.measuring_unit_name + " @ " + SFNumberFunctions._displayCurrency(log_entry.selling_price, 2);
                 html += '</li>';
+            }
+            else {
+                html += "<li class='text-sm bg-info";
+                html += " text-white px-2 py-1 rounded mb-1 opacity-75' style='font-size:0.8rem'>";
+                html += __toEuropeanDate ( log_entry.created_at ) + " - ΑΠΟΓΡ : ";     
+                html += SFNumberFunctions._displayNumber(log_entry.old_stock, 2) + " -> " + SFNumberFunctions._displayNumber(log_entry.new_stock, 2) + " ΣΤΟΚ";
+                html += '</li>';
+
             }
             $(".product-log-list").attr("data-product-id", log_entry.product_id);
             

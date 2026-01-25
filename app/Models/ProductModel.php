@@ -17,8 +17,8 @@ class ProductModel extends Model
     protected $protectFields        = true;
     protected $allowedFields        = [
 
-        "supplier_id","brand_id","measuring_unit_id","code","description","barcode","stock",
-        "buying_price","selling_price","wholesale_discount","image", "reorder_quantity",
+        "supplier_id","brand_id","measuring_unit_id","barcode","description","stock",
+        "buying_price","selling_price","wholesale_discount", "reorder_quantity",
         
 
         ];
@@ -62,5 +62,20 @@ class ProductModel extends Model
 
         return $product;
 
+    }
+
+    public function __saveProductRaw ( array $data ): void {
+
+        // get existing product
+        $product = $this->where('barcode', $data['barcode'])->first();
+
+        // update stock
+        $data['stock'] = bcadd ( floatval($data['stock'] ),  floatval($data['quantity'] ), 2 );
+        unset ( $data['quantity']);
+        
+        // save/update data 
+        $product != null ? 
+                $this->set($data)->where('id', $product['id'])->update() : 
+                $this->insert($data); 
     }
 }

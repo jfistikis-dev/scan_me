@@ -30,17 +30,53 @@
             <div class="col-md-8 " >
                 <div class="card mt-3 h-100 mh-100" > 
                     <div class="card-body" >
-                    <div class="row mb-3">
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <input type="text" id="searchName" class="form-control" placeholder="Εύρεση από περιγραφής...">
-                                        <button id="btnSearch" class="btn btn-primary btn-medium">Αναζήτηση</button>
-                                        <button id="btnClear" class="btn btn-outline-secondary btn-medium">Καθάρισμός</button>
+                        <div class="row mb-3">
+                            <div class="col-md-8 d-flex align-items-center col-sm-12" >
+                                <div class="input-group">
+                                    <input type="text" id="searchName" class="form-control" placeholder="Εύρεση από περιγραφής...">
+                                    <button id="btnSearch" class="btn btn-primary btn-medium">Αναζήτηση</button>
+                                    <button id="btnClear" class="btn btn-outline-secondary btn-medium">Καθάρισμός</button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end d-flex flex-column align-items-end col-sm-12">
+
+                                <a id="exportBtn" class="btn btn-success btn-medium mb-2"  href="#">Export to Excel</a>
+                                <a id="importBtn" class="btn btn-info btn-medium text-white"  href="#">Import from Excel</a>
+                            </div>
+                                    
+                        </div>
+                        <div clas="row">
+                            <div class="col-md-12">
+                                <!-- Import upload area  -->
+                                
+                                <div id="importUploadArea">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0"><i class="fas fa-upload"></i> Εισαγωγή Αρχείου Excel</h6>
+                                        </div>
+                                        <div class="card-body text-center p-0" id="dropZone">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                            <p class="lead">Σύρετε και αποθέστε το αρχείο Excel εδώ</p>
+                                            <p class="text-muted">ή κάντε κλικ για επιλογή αρχείου</p>
+                                            <input type="file" id="excelFile" accept=".xlsx,.xls" class="d-none">
+                                            <button type="button" id="browseFile" class="btn btn-outline-primary mt-2">
+                                                <i class="fas fa-search"></i> Περιήγηση
+                                            </button>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div id="uploadProgress" class="d-none">
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                        role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <p class="text-center mt-2 mb-0" id="progressText">Ανέβασμα αρχείου...</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4 text-end">
-                                    <a id="exportBtn" class="btn btn-success btn-medium" href="#">Export to Excel</a>
-                                </div>
+
+                            </div>
+                            
                         </div>
                         <hr/>
                         <table id="productTable" class="table table-responsive display mb-2 fs-7" style="width:100%">
@@ -61,7 +97,6 @@
                     </div>		
                 </div>
             </div>
-
             <!-- RIGHT PANEL -->
             <div class="col-md-4">
 
@@ -78,6 +113,7 @@
 
             
             </div>
+            
         </div>
 
         <!-- Toast messages -->
@@ -99,7 +135,7 @@
                 processing: true,
                 searching: false,
                 ajax: {
-                    url: '/products/ajaxList',
+                    url: '<?= base_url('/products/ajaxList') ?>',
                     type: 'POST',
                     data: function(d){
                         // DataTables sends lots of params; we only need to attach name filter
@@ -196,7 +232,7 @@
             $('#exportBtn').on('click', function(e){
                 e.preventDefault();
                 var s = $('#searchName').val();
-                var url = '/products/export' + (s ? ('?search=' + encodeURIComponent(s)) : '');
+                var url = '<?php echo base_url() ?>/products/export' + (s ? ('?search=' + encodeURIComponent(s)) : '');
                 window.location.href = url;
             });
 
@@ -230,6 +266,170 @@
             })
 
 
+            // upload excel file : #
+                       
+            let $importBtn = $('#importBtn');
+            let $importArea = $('#importUploadArea');
+            let $dropZone = $('#dropZone');
+            let $fileInput = $('#excelFile');
+            let $browseFile = $('#browseFile');
+            let $uploadProgress = $('#uploadProgress');
+            let $progressBar = $uploadProgress.find('.progress-bar');
+            let $progressText = $('#progressText');
+            
+            // Function to show import area with animation
+            function showImportArea() {
+                $importArea.removeClass('hiding');
+                $importArea.addClass('show');
+                
+                // Trigger reflow to restart animation
+                void $importArea[0].offsetWidth;
+            }
+            
+            // Function to hide import area with animation
+            function hideImportArea() {
+                $importArea.removeClass('show');
+                $importArea.addClass('hiding');
+                
+                // Remove hiding class after animation completes
+                setTimeout(function() {
+                    $importArea.removeClass('hiding');
+                }, 300);
+            }
+            
+            // Toggle import area with smooth animation
+            $importBtn.on('click', function() {
+                if ($importArea.hasClass('show')) {
+                    hideImportArea();
+                } else {
+                    showImportArea();
+                }
+            });
+            
+            // Browse file button
+            $browseFile.on('click', function(e) {
+                e.stopPropagation(); // Prevent triggering dropzone click
+                $fileInput.click();
+            });
+            
+            // File input change
+            $fileInput.on('change', function(e) {
+                if (this.files.length > 0) {
+                    uploadFile(this.files[0]);
+                }
+            });
+            
+            // Drag and drop functionality
+            $dropZone.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('border border-primary bg-light');
+            });
+            
+            $dropZone.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('border border-primary bg-light');
+            });
+            
+            $dropZone.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('border border-primary bg-light');
+                
+                let files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadFile(files[0]);
+                }
+            });
+            
+            // Click to upload (with better event handling)
+            $dropZone.on('click', function(e) {
+                // Don't trigger if clicking on browse button or file input
+                if (!$(e.target).is('#browseFile') && 
+                    !$(e.target).is('#excelFile') &&
+                    !$(e.target).closest('#browseFile').length) {
+                    $fileInput.click();
+                }
+            });
+            
+            // Upload function
+            function uploadFile(file) {
+                // Validate file type
+                if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                    alert('Παρακαλώ επιλέξτε αρχείο Excel (.xlsx ή .xls)');
+                    return;
+                }
+                
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Το αρχείο είναι πολύ μεγάλο. Μέγιστο μέγεθος: 10MB');
+                    return;
+                }
+                
+                // Show progress bar
+                $uploadProgress.removeClass('d-none');
+                $progressBar.css('width', '0%');
+                $progressText.text('Ανέβασμα αρχείου...');
+                
+                // Prepare form data
+                let formData = new FormData();
+                formData.append('excel_file', file);
+                formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+                
+                // Send AJAX request
+                $.ajax({
+                    url: '<?= site_url("products/import") ?>',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    xhr: function() {
+                        let xhr = new XMLHttpRequest();
+                        
+                        // Upload progress
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) {
+                                let percent = Math.round((e.loaded / e.total) * 100);
+                                $progressBar.css('width', percent + '%');
+                                $progressText.text('Ανέβασμα αρχείου: ' + percent + '%');
+                            }
+                        });
+                        
+                        return xhr;
+                    },
+                    success: function(response) {
+                        try {
+                            let result = typeof response === 'string' ? JSON.parse(response) : response;
+                            
+                            if (result.success) {
+                                $progressBar.css('width', '100%');
+                                $progressText.html('<span class="text-success">' + result.message + '</span>');
+                                
+                                show_toast (result.message, 'success');
+
+                                // Hide upload area after 2 seconds and reload page
+                                setTimeout(function() {
+                                    hideImportArea();
+                                    $uploadProgress.addClass('d-none');
+                                    table.ajax.reload();
+                                }, 2000);
+                            } else {
+                                $progressText.html('<span class="text-danger">Σφάλμα: ' + result.message + '</span>');
+                                $progressBar.css('width', '100%').addClass('bg-danger');
+                            }
+                        } catch (e) {
+                            $progressText.html('<span class="text-danger">Σφάλμα στην επεξεργασία της απάντησης</span>');
+                            $progressBar.css('width', '100%').addClass('bg-danger');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $progressText.html('<span class="text-danger">Σφάλμα δικτύου: ' + error + '</span>');
+                        $progressBar.css('width', '100%').addClass('bg-danger');
+                    }
+                });
+            }
+        
         });
 
     </script>
