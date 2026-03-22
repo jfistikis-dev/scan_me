@@ -111,7 +111,6 @@
 
     </div>
 
-
     <!-- managing basket functions  -->
     <script>
 
@@ -295,7 +294,7 @@
 
 							
 							} else {
-								alert("Product not found!");
+								Swal.fire({title: "Εύρεση προϊόντος", icon: "error",text: "Το προϊόν ... δεν βρέθηκε στην βάση!!."});
 							}
 						}
 					});
@@ -319,26 +318,23 @@
         $("body").on( "click", ".delete-area", function (event ) {
             event.preventDefault();
             event.stopPropagation();
-
-           /* let product = __getProductFromList ( $(this).parent().data("barcode").toString() );
-            __removeProductFromBasket ( product );*/
-			
+            
 			Swal.fire({
-  title: "Are you sure?",
-  text: "You won't be able to revert this!",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, delete it!"
-}).then((result) => {
-  if (result.isConfirmed) Swal.fire({
-    title: "Deleted!",
-    text: "Your file has been deleted.",
-    icon: "success"
-  });
-});
-			
+
+                title: "Είστε σίγουρος?",
+                text: "Δεν είναι δυνατή η επαναφορά!",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ναί, διαγραφή!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let product = __getProductFromList ( $(this).parent().data("barcode").toString() );
+                        __removeProductFromBasket ( product );
+                        Swal.fire({title: "Διαγράφηκε!",text: "Η εγγραφή διαγράφηκε με επιτυχία.",icon: "success"});
+                    }
+            });
            
         });
 
@@ -350,13 +346,14 @@
 			
 		});
 		
-		$(document).on( 'focus', '.quantity-input', function() {setTimeout(() => $(this).select(), 100); });
-		$(document).on( 'focus', '.price-input', function() {setTimeout(() => $(this).select(), 100); });
-		
         $(document).on( 'input', '.price-input', function() { 
 			_transmissionOfBarcodeStarted ? $(this).val ( $(this).val().slice(0, -1) ) : null;
 			__updateProductPriceInHtml( $(this) ); 
 		});
+
+        $(document).on( 'focus', '.quantity-input', function() {setTimeout(() => $(this).select(), 100); });
+		$(document).on( 'focus', '.price-input', function() {setTimeout(() => $(this).select(), 100); });
+
 
         // empty the basket 
         $(document).on( "click", ".btn-empty-basket", function () {

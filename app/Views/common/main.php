@@ -40,7 +40,7 @@
     <!-- Jquery UI -->
     <script src="<?= base_url("js/jquery-ui.min.js") ?>"></script>
 
-    
+    <script src="<?= base_url("js/sweetalert2.all.js") ?>"></script>
 
 </head>
  

@@ -285,6 +285,6 @@ ul a.dropdown-item:active { color: #1e2125; background-color : #fff; }
     transition: width 0.3s ease;
 }
 
-
+div:where(.swal2-container) div:where(.swal2-popup) { font-size: 0.8rem !important; }
 
 /* -- endof-Display excel upload area -- */
