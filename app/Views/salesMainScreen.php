@@ -199,7 +199,12 @@
             
             let productIndex = basketProductList.findIndex(p => p.data.barcode === product.data.barcode);
             // update quantity in list
-            basketProductList[productIndex].basketQuantity += SFNumberFunctions._parseNumber( quantity );
+			
+			let basketQuantityNow = SFNumberFunctions._parseNumber( basketProductList[productIndex].basketQuantity );
+			debugger;
+			basketQuantityNow += SFNumberFunctions._parseNumber( quantity );
+			
+            basketProductList[productIndex].basketQuantity = basketQuantityNow; 
             
             // update quantity in html
             let productHtml = __getProductFromHtml( product.data.barcode );
@@ -338,22 +343,24 @@
            
         });
 
+
+		
         // change item's quantity or price
-        $(document).on( 'input', '.quantity-input', function() { 
-			
+        $(document).on( 'input', '.price-input,.quantity-input', function() { 
 			_transmissionOfBarcodeStarted ? $(this).val ( $(this).val().slice(0, -1) ) : null;
 			__updateProductPriceInHtml( $(this) );
 			
 		});
 		
-        $(document).on( 'input', '.price-input', function() { 
-			_transmissionOfBarcodeStarted ? $(this).val ( $(this).val().slice(0, -1) ) : null;
-			__updateProductPriceInHtml( $(this) ); 
+		// on setting focus... select the text!
+		$(document).on( 'focus', '.price-input,.quantity-input', function() {
+			const input = this;
+			const length = input.value.length;
+			input.setSelectionRange(length, length);
+			
+			setTimeout(() => $(this).select(), 100); 
 		});
-
-        $(document).on( 'focus', '.quantity-input', function() {setTimeout(() => $(this).select(), 100); });
-		$(document).on( 'focus', '.price-input', function() {setTimeout(() => $(this).select(), 100); });
-
+		
 
         // empty the basket 
         $(document).on( "click", ".btn-empty-basket", function () {

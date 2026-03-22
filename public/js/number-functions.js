@@ -65,13 +65,18 @@ const SFNumberFunctions = {
     _parseNumber: ( number )        => {
 
         if ( !number  ) return 0.00;
-
-        if ( SFNumberFunctions._isValidFloat ( number ) ) { return number; }
-        else {
-            
-            let temp = String( number ).replace(/\./g, '')
-            return parseFloat ( temp.replace(',', '.') );
-        }
+		
+		// already a number
+		if (typeof number === "number") { return number; }
+		
+		let str = String(number).trim();
+		
+		// string but can be converted... ?
+        if ( SFNumberFunctions._isValidFloat ( str ) ) { return parseFloat(str); }
+       
+		// convert to euro format 
+		return parseFloat ( str.replace(/\./g, '').replace(',', '.') );
+        
 
 
     },
