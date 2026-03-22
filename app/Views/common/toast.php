@@ -37,8 +37,8 @@
 <div id="errorToast" class="d-none toast-container position-fixed bottom-0 end-1 z-index-2 mb-4">
     <div class="toast fade p-2 mt-2 bg-white show" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header border-0">
-            <i class="material-icons text-danger me-2">campaign</i>
-            <span class="me-auto text-gradient text-danger font-weight-bold"><?= lang('Notification.title_error') ?></span>
+            <i class="bi bi-x-octagon-fill text-danger pe-2"></i> - 
+            <span class="me-auto text-gradient text-danger font-weight-bold ps-2"><?= lang('Notification.title_error') ?></span>
             <small class="text-body"><?php lang('Notification.console_notification') ?></small>
             <i class="fas fa-times text-md ms-3 cursor-pointer" data-bs-dismiss="toast" aria-label="Close" aria-hidden="true"></i>
         </div>

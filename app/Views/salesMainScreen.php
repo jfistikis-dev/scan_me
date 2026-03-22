@@ -14,7 +14,7 @@
 			<div class="card mt-3 h-100 mh-100" > 
 				<div class="card-body" >
                     <div class="d-flex justify-content-between d-inline-block">
-                        <h1 class="card-title mb-0">TAMEIO<sup class="text-danger ">&nbsp;<small><b>1v0</b></small></sup></h1>
+                        <h1 class="card-title mb-0">TAMEIO<sup class="text-danger ">&nbsp;<small><b>1v2</b></small></sup></h1>
                         <button type="button" class="btn h-auto btn-empty-basket"><i class="bi bi-arrow-clockwise"></i></button>
                     </div>
 
@@ -116,6 +116,7 @@
     <script>
 
         let basketProductList = [];
+		let _transmissionOfBarcodeStarted = false;
 
         
         function __updateProductPriceInHtml ( $node ) {
@@ -265,37 +266,40 @@
             $(document).on('keydown', function(e) {
                 // Reset timer if the user types/scans again soon
                 clearTimeout(timer);
-
+			
+				if ( barcode.startsWith('@') || barcode == '@' ) {
+					_transmissionOfBarcodeStarted = true;
+				}
+				
                 // Check if key is Enter or Tab — scanner done
-                if (e.key === 'Enter' || e.key === 'Tab') {
-                    if (barcode.length > 3) { // avoid false triggers
-                        
-                        console.log('Scanned barcode:', barcode);
-                        $barcodeStr = barcode.substring (1);
-                        
-                        $.ajax({
-                            method: "POST",
-                            url: "sales/ajax-sales-entry",
-                            data: { barcode: $barcodeStr },
-                            dataType: "json",
-                            success: function (serverData) {
-                                
-                                __clearProductLogs ();
-                                if ( serverData.data != null ) {
-                                    let product = __getProductFromList ( $barcodeStr );
-                                    
-                                    product != null ? __updateProductQuantity ( product, 1) : __addProductToBasket( serverData );
+                if ((e.key === 'Enter' || e.key === 'Tab' ) && barcode.length > 3) {
+                                        
+					console.log('Scanned barcode:', barcode);
+					$barcodeStr = barcode.substring (1); // cut the '@'
+					_transmissionOfBarcodeStarted = false;
+					
+					$.ajax({
+						method: "POST",
+						url: "sales/ajax-sales-entry",
+						data: { barcode: $barcodeStr },
+						dataType: "json",
+						success: function (serverData) {
+							
+							__clearProductLogs ();
+							if ( serverData.data != null ) {
+								let product = __getProductFromList ( $barcodeStr );
+								
+								product != null ? __updateProductQuantity ( product, 1) : __addProductToBasket( serverData );
 
-                                    __renderProductLogsFromProductData ( serverData );
+								__renderProductLogsFromProductData ( serverData );
 
-                                
-                                } else {
-                                    alert("Product not found!");
-                                }
-                            }
-                        });
-                     
-                    }
+							
+							} else {
+								alert("Product not found!");
+							}
+						}
+					});
+           
                     barcode = '';
                     return;
                 }
@@ -305,25 +309,54 @@
                     barcode += e.key;
                 }
 
-                // Reset if no key pressed for 100ms (manual typing cutoff)
+                // Reset barcode , if no key pressed for 150ms 
                 timer = setTimeout(() => barcode = '', 100);
             });
            
         });
 
         // delete an item from list ... 
-        $("body").on( "click", ".btn-close", function (event ) {
+        $("body").on( "click", ".delete-area", function (event ) {
             event.preventDefault();
             event.stopPropagation();
 
-            let product = __getProductFromList ( $(this).parent().data("barcode").toString() );
-            __removeProductFromBasket ( product );
+           /* let product = __getProductFromList ( $(this).parent().data("barcode").toString() );
+            __removeProductFromBasket ( product );*/
+			
+			Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+}).then((result) => {
+  if (result.isConfirmed) Swal.fire({
+    title: "Deleted!",
+    text: "Your file has been deleted.",
+    icon: "success"
+  });
+});
+			
            
         });
 
         // change item's quantity or price
-        $(document).on( 'input', '.quantity-input', function() { __updateProductPriceInHtml( $(this) ); });
-        $(document).on( 'input', '.price-input', function() { __updateProductPriceInHtml( $(this) ); });
+        $(document).on( 'input', '.quantity-input', function() { 
+			
+			_transmissionOfBarcodeStarted ? $(this).val ( $(this).val().slice(0, -1) ) : null;
+			__updateProductPriceInHtml( $(this) );
+			
+		});
+		
+		$(document).on( 'focus', '.quantity-input', function() {setTimeout(() => $(this).select(), 100); });
+		$(document).on( 'focus', '.price-input', function() {setTimeout(() => $(this).select(), 100); });
+		
+        $(document).on( 'input', '.price-input', function() { 
+			_transmissionOfBarcodeStarted ? $(this).val ( $(this).val().slice(0, -1) ) : null;
+			__updateProductPriceInHtml( $(this) ); 
+		});
 
         // empty the basket 
         $(document).on( "click", ".btn-empty-basket", function () {

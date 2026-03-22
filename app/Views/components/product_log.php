@@ -50,7 +50,7 @@
 
         $list.empty();
         
-        console.log ( log );
+        //console.log ( log );
 
         log.forEach ( function ( log_entry ) {
             if ( log_entry.type_id == "<?=  PRODUCT_LOG_TYPE_BUYING ?>") {

@@ -135,7 +135,7 @@
                 processing: true,
                 searching: false,
                 ajax: {
-                    url: '<?= base_url('/products/ajaxList') ?>',
+                    url: '<?= base_url('/products/ajaxList' ) ?>',
                     type: 'POST',
                     data: function(d){
                         // DataTables sends lots of params; we only need to attach name filter
